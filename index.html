@@ -215,16 +215,49 @@ header{
 .cwdrow{display:grid;grid-template-columns:repeat(7,1fr);background:var(--s100);}
 .cwd{text-align:center;padding:.5rem 0;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--s400);}
 .cdgrid{display:grid;grid-template-columns:repeat(7,1fr);}
-.cday{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.8rem;color:var(--s600);position:relative;padding:.15rem;}
+.cday{
+  aspect-ratio:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  font-size:.8rem;color:var(--s600);
+  position:relative;padding:.1rem;border-radius:6px;
+}
 .cday.other{color:var(--s300);}
-.cday.today{font-weight:600;color:var(--sage-d);}
-.cday.today::after{content:'';position:absolute;bottom:3px;width:4px;height:4px;border-radius:50%;background:var(--sage-d);}
-.cday.hy{background:rgba(143,168,130,.15);}
-.ddots{display:flex;gap:2px;margin-top:1px;}
-.dy{width:5px;height:5px;border-radius:50%;}
-.dm{width:5px;height:5px;border-radius:50%;}
-.cday.hy .dy{background:var(--sage);}
-.cday.hm .dm{background:var(--terra-l);}
+.dnum{
+  width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.76rem;
+  border:2px solid transparent;
+  background:transparent;
+  color:inherit;
+  transition:all .2s;
+}
+/* Yoga: anillo verde alrededor del número */
+.cday.hy .dnum{
+  border-color:var(--sage-d);
+  font-weight:600;color:var(--sage-d);
+}
+/* Meditación: círculo terracota relleno, número blanco */
+.cday.hm .dnum{
+  background:var(--terra);
+  color:white;
+  font-weight:600;
+  border-color:var(--terra);
+}
+/* Ambos: círculo terracota relleno + anillo verde exterior */
+.cday.hy.hm .dnum{
+  background:var(--terra);
+  color:white;
+  font-weight:600;
+  border-color:var(--sage-d);
+  box-shadow:0 0 0 2px white, 0 0 0 4px var(--sage-d);
+}
+/* Hoy: punto abajo (::after) */
+.cday.today::after{
+  content:'';
+  position:absolute;bottom:3px;left:50%;transform:translateX(-50%);
+  width:4px;height:4px;border-radius:50%;
+  background:var(--s500);
+}
 .legend{display:flex;gap:1rem;margin-bottom:.9rem;font-size:.7rem;color:var(--s500);}
 .legdot{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:.3rem;}
 .stats4{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;margin-bottom:1rem;}
@@ -378,8 +411,12 @@ textarea.mta{width:100%;height:90px;padding:.65rem;border:1px solid var(--s200);
       <div class="cdgrid" id="cdgrid"></div>
     </div>
     <div class="legend">
-      <span><span class="legdot" style="background:rgba(143,168,130,.4);"></span>Yoga</span>
-      <span><span class="legdot" style="border-radius:50%;background:var(--terra-l);width:8px;height:8px;"></span>Meditación</span>
+      <span style="display:flex;align-items:center;gap:.4rem;">
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--sage-d);display:inline-block;"></span>Yoga
+      </span>
+      <span style="display:flex;align-items:center;gap:.4rem;">
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--terra);display:inline-block;"></span>Meditación
+      </span>
     </div>
     <div class="stats4">
       <div class="sbox2"><div class="si2">🧘</div><div class="sn" id="sty">0</div><div class="sl">Días yoga</div></div>
@@ -671,8 +708,9 @@ function togM(){
         clearInterval(mInt);mRun=false;
         document.getElementById('mbtn').textContent='Comenzar';
         document.getElementById('bsavemed').classList.add('show');
+        playBowl();
+        if('vibrate'in navigator)navigator.vibrate([400,100,400,100,400]);
         toast('🔔 Meditación completada · '+fmed(mSec));
-        if('vibrate'in navigator)navigator.vibrate([300,100,300]);
       }
     },1000);
   }
@@ -751,7 +789,9 @@ function rcal(){
     else if(i>=dow+dim){d=i-dow-dim+1;other=true;const dt=new Date(calY,calM+1,d);ds=dt.toISOString().split('T')[0];}
     else{d=i-dow+1;ds=dstr(calY,calM,d);}
     const hy=yD.has(ds),hm=mD.has(ds),isT=ds===tod;
-    h+=`<div class="cday${other?' other':''}${isT?' today':''}${hy?' hy':''}${hm?' hm':''}">${d}<div class="ddots"><div class="dy"></div><div class="dm"></div></div></div>`;
+    h+=`<div class="cday${other?' other':''}${isT?' today':''}${hy?' hy':''}${hm?' hm':''}">
+        <div class="dnum">${d}</div>
+      </div>`;
   }
   document.getElementById('cdgrid').innerHTML=h;
 }
@@ -885,6 +925,70 @@ function restoreNotif(){
     notifOn=true;document.getElementById('ntog').classList.add('on');schedNotif();
   }
   document.querySelectorAll('.ntm').forEach(el=>el.classList.toggle('on',el.textContent.trim()===notifTime));
+}
+
+
+// ═══════════════════════════════════════════
+//  TIBETAN BOWL — Web Audio API
+// ═══════════════════════════════════════════
+function playBowl(volume = 0.7) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Main resonant tone ~432 Hz
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(432, ctx.currentTime);
+    osc1.frequency.exponentialRampToValueAtTime(428, ctx.currentTime + 4);
+    gain1.gain.setValueAtTime(0, ctx.currentTime);
+    gain1.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.08);
+    gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 6);
+    osc1.connect(gain1); gain1.connect(ctx.destination);
+
+    // 2nd harmonic ~864 Hz
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(864, ctx.currentTime);
+    gain2.gain.setValueAtTime(0, ctx.currentTime);
+    gain2.gain.linearRampToValueAtTime(volume * 0.3, ctx.currentTime + 0.06);
+    gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 4);
+    osc2.connect(gain2); gain2.connect(ctx.destination);
+
+    // 3rd harmonic ~1296 Hz (shimmer)
+    const osc3 = ctx.createOscillator();
+    const gain3 = ctx.createGain();
+    osc3.type = 'sine';
+    osc3.frequency.setValueAtTime(1296, ctx.currentTime);
+    gain3.gain.setValueAtTime(0, ctx.currentTime);
+    gain3.gain.linearRampToValueAtTime(volume * 0.12, ctx.currentTime + 0.04);
+    gain3.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2.5);
+    osc3.connect(gain3); gain3.connect(ctx.destination);
+
+    // Strike transient (short noise burst)
+    const bufSize = ctx.sampleRate * 0.06;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+    const noise = ctx.createBufferSource();
+    const noiseGain = ctx.createGain();
+    const noiseFilter = ctx.createBiquadFilter();
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.value = 600;
+    noiseFilter.Q.value = 0.8;
+    noise.buffer = buf;
+    noiseGain.gain.setValueAtTime(volume * 0.4, ctx.currentTime);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+    noise.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(ctx.destination);
+
+    osc1.start(ctx.currentTime); osc1.stop(ctx.currentTime + 7);
+    osc2.start(ctx.currentTime); osc2.stop(ctx.currentTime + 5);
+    osc3.start(ctx.currentTime); osc3.stop(ctx.currentTime + 3);
+    noise.start(ctx.currentTime);
+
+    setTimeout(() => ctx.close(), 8000);
+  } catch(e) { console.log('Audio not available:', e); }
 }
 
 // ═══════════════════════════════════════════

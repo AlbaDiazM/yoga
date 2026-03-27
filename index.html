@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sādhana">
+<meta name="theme-color" content="#2e2720">
+<title>Sādhana · Diario de Yoga</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --s50:#faf9f7;--s100:#f2ede6;--s200:#e8dfd3;--s300:#d6c9b8;
+  --s400:#b8a594;--s500:#8c7b6b;--s600:#6b5c4e;--s700:#4a3f35;--s800:#2e2720;
+  --sage:#8fa882;--sage-d:#5c7a52;--sage-l:#c8d5c0;
+  --terra:#b87355;--terra-l:#d4956b;
+  --gold:#c4a35a;
+  --safe-top:env(safe-area-inset-top);
+  --safe-bot:env(safe-area-inset-bottom);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overscroll-behavior:none;}
+body{
+  font-family:'Jost',sans-serif;
+  background:var(--s50);color:var(--s800);
+  display:flex;flex-direction:column;height:100%;overflow:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse at 10% 5%,rgba(143,168,130,.08) 0%,transparent 55%),
+    radial-gradient(ellipse at 90% 95%,rgba(196,163,90,.05) 0%,transparent 50%);
+}
+
+/* STATUS */
+.status-bar{height:var(--safe-top);background:rgba(250,249,247,.95);flex-shrink:0;z-index:10;position:relative;}
+
+/* HEADER */
+header{
+  flex-shrink:0;z-index:10;position:relative;
+  background:rgba(250,249,247,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--s200);
+  padding:.7rem 1rem;display:flex;align-items:center;justify-content:space-between;
+}
+.logo{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:400;letter-spacing:.08em;color:var(--s700);}
+.logo em{color:var(--sage-d);font-style:italic;}
+.hbtns{display:flex;gap:.4rem;}
+.ibtn{width:34px;height:34px;border-radius:50%;border:none;background:var(--s100);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.95rem;color:var(--s600);}
+.ibtn:active{background:var(--s200);}
+
+/* INSTALL BANNER */
+.ibanner{
+  flex-shrink:0;background:var(--s800);color:white;
+  padding:.7rem 1rem;display:none;align-items:center;gap:.7rem;font-size:.78rem;
+}
+.ibanner.show{display:flex;}
+.ibanner-text{flex:1;line-height:1.4;}
+.ibanner-close{background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:1rem;}
+
+/* SCROLL */
+.scroll-area{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  position:relative;z-index:1;
+  padding-bottom:calc(72px + var(--safe-bot) + 8px);
+}
+
+/* BOTTOM NAV */
+.bnav{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:rgba(250,249,247,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--s200);
+  display:flex;padding-bottom:var(--safe-bot);
+}
+.nitem{
+  flex:1;padding:.55rem .4rem .35rem;border:none;background:none;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--s400);transition:color .2s;
+}
+.nitem.on{color:var(--s800);}
+.nicon{font-size:1.25rem;line-height:1;}
+.nlabel{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;}
+.nitem.on .nlabel{color:var(--sage-d);}
+
+/* VIEWS */
+.view{display:none;padding:1.1rem 1rem 0;}
+.view.on{display:block;}
+
+/* HEADINGS */
+.pg-t{font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:300;color:var(--s700);letter-spacing:.04em;margin-bottom:.15rem;}
+.pg-s{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--s400);margin-bottom:1.1rem;}
+
+/* ══ PRÁCTICA ══ */
+.sbox{position:relative;margin-bottom:.9rem;}
+.sbox input{
+  width:100%;padding:.6rem 1rem .6rem 2.4rem;
+  border:1px solid var(--s200);border-radius:2rem;
+  background:white;font-family:'Jost',sans-serif;font-size:.85rem;color:var(--s800);
+  outline:none;transition:border-color .2s;
+}
+.sbox input:focus{border-color:var(--sage);}
+.sicon{position:absolute;left:.85rem;top:50%;transform:translateY(-50%);color:var(--s400);font-size:.9rem;}
+
+.chips{display:flex;gap:.35rem;overflow-x:auto;padding-bottom:.4rem;margin-bottom:.9rem;scrollbar-width:none;}
+.chips::-webkit-scrollbar{display:none;}
+.chip{
+  flex-shrink:0;padding:.28rem .8rem;border:1px solid var(--s200);border-radius:2rem;
+  background:white;font-family:'Jost',sans-serif;font-size:.68rem;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--s500);cursor:pointer;transition:all .2s;
+}
+.chip.on{background:var(--s800);border-color:var(--s800);color:white;}
+
+/* ASANA ROW */
+.alist{display:flex;flex-direction:column;gap:.5rem;}
+.arow{
+  background:white;border:1px solid var(--s200);border-radius:14px;
+  display:flex;align-items:stretch;cursor:pointer;
+  overflow:hidden;transition:border-color .2s;position:relative;
+}
+.arow::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:3px;background:linear-gradient(180deg,var(--sage),var(--gold));
+  transform:scaleY(0);transform-origin:bottom;transition:transform .22s;border-radius:0 0 0 14px;
+}
+.arow:active{background:var(--s100);}
+.arow.sel{background:var(--s800);border-color:var(--s800);}
+.arow.sel::before{transform:scaleY(1);}
+
+/* SVG ILLUSTRATION */
+.asana-fig{
+  width:72px;min-width:72px;height:72px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--s100);flex-shrink:0;
+  font-size:2.2rem;
+  transition:background .2s;
+}
+.arow.sel .asana-fig{background:rgba(255,255,255,.08);}
+.asana-fig svg{width:52px;height:52px;}
+
+.ainfo{flex:1;padding:.75rem .8rem .75rem .6rem;min-width:0;display:flex;flex-direction:column;justify-content:center;}
+.ask{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:500;color:var(--s800);line-height:1.2;}
+.arow.sel .ask{color:white;}
+.aes{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.82rem;color:var(--s400);margin-top:.15rem;}
+.arow.sel .aes{color:rgba(255,255,255,.5);}
+.abadge{
+  font-size:.58rem;letter-spacing:.07em;text-transform:uppercase;
+  padding:.12rem .5rem;border-radius:2rem;margin-top:.3rem;align-self:flex-start;
+}
+.bi{background:rgba(143,168,130,.2);color:var(--sage-d);}
+.ba{background:rgba(184,115,85,.15);color:var(--terra);}
+.arow.sel .abadge{background:rgba(255,255,255,.12);color:rgba(255,255,255,.55);}
+
+/* SESSION PANEL */
+.sp{
+  position:fixed;bottom:calc(60px + var(--safe-bot));left:0;right:0;z-index:80;
+  background:var(--s800);border-radius:20px 20px 0 0;
+  padding:.9rem 1rem .8rem;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 -8px 40px rgba(30,26,22,.4);
+}
+.sp.up{transform:translateY(0);}
+.sp-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;}
+.sp-title{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:white;font-weight:300;}
+.sp-ct{background:var(--sage);color:white;border-radius:2rem;padding:.12rem .6rem;font-size:.72rem;}
+.sp-tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.7rem;max-height:68px;overflow-y:auto;}
+.sptag{background:rgba(255,255,255,.1);border-radius:2rem;padding:.22rem .65rem;font-size:.72rem;color:white;display:flex;align-items:center;gap:.3rem;}
+.sptag button{background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:.78rem;padding:0;line-height:1;}
+.trow{display:flex;align-items:center;gap:.7rem;background:rgba(255,255,255,.07);border-radius:12px;padding:.75rem .9rem;margin-bottom:.65rem;}
+.tdisp{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;letter-spacing:.12em;color:white;flex:1;}
+.tbtn{padding:.4rem .85rem;border-radius:2rem;border:none;cursor:pointer;font-family:'Jost',sans-serif;font-size:.72rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;}
+.tgo{background:var(--sage);color:white;}
+.trst{background:rgba(255,255,255,.12);color:white;}
+.tbtn:active{opacity:.8;}
+.bsave{width:100%;padding:.78rem;background:linear-gradient(135deg,var(--gold),var(--terra-l));border:none;border-radius:12px;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:white;cursor:pointer;}
+.bsave:active{opacity:.85;}
+
+/* ══ MEDITACIÓN ══ */
+.med-wrap{text-align:center;padding:1.2rem .5rem;}
+.mandala{width:150px;height:150px;margin:0 auto 1.2rem;position:relative;}
+.mr{position:absolute;inset:0;border-radius:50%;border:1px solid;animation:mr 4s ease-in-out infinite;}
+.mr:nth-child(1){border-color:rgba(143,168,130,.55);}
+.mr:nth-child(2){inset:13px;border-color:rgba(196,163,90,.4);animation-delay:.9s;}
+.mr:nth-child(3){inset:26px;border-color:rgba(143,168,130,.3);animation-delay:1.8s;}
+.mc{position:absolute;inset:42px;border-radius:50%;background:radial-gradient(circle,var(--sage-l),var(--sage));display:flex;align-items:center;justify-content:center;font-size:1.7rem;}
+@keyframes mr{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.06);opacity:.5;}}
+.mtime{font-family:'Cormorant Garamond',serif;font-size:3.5rem;font-weight:300;color:var(--s700);letter-spacing:.1em;margin:.4rem 0;}
+.mpresets{display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap;margin:.8rem 0;}
+.mpre{padding:.35rem .9rem;border:1px solid var(--s300);border-radius:2rem;background:white;font-family:'Jost',sans-serif;font-size:.75rem;color:var(--s600);cursor:pointer;transition:all .2s;}
+.mpre.on{background:var(--s800);border-color:var(--s800);color:white;}
+.mbtns{display:flex;gap:.7rem;justify-content:center;margin:.8rem 0;}
+.mbtn{padding:.65rem 1.6rem;border-radius:2rem;border:none;cursor:pointer;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;}
+.mpri{background:var(--s800);color:white;}
+.msec{background:var(--s100);color:var(--s600);}
+.mbtn:active{opacity:.8;}
+.bsavemed{display:none;padding:.65rem 2rem;background:linear-gradient(135deg,var(--sage),var(--sage-d));border:none;border-radius:2rem;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:white;cursor:pointer;margin-top:.6rem;}
+.bsavemed.show{display:inline-flex;}
+.bsavemed:active{opacity:.8;}
+.nsec{margin:1.2rem 1rem 0;background:white;border:1px solid var(--s200);border-radius:16px;padding:1rem 1.1rem;}
+.nrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;}
+.toggle{width:42px;height:24px;border-radius:12px;border:none;cursor:pointer;background:var(--s300);position:relative;transition:background .25s;flex-shrink:0;}
+.toggle.on{background:var(--sage);}
+.toggle::after{content:'';position:absolute;left:2px;top:2px;width:20px;height:20px;border-radius:50%;background:white;transition:transform .25s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle.on::after{transform:translateX(18px);}
+.ntimes{display:flex;gap:.4rem;flex-wrap:wrap;}
+.ntm{padding:.28rem .75rem;border:1px solid var(--s200);border-radius:2rem;background:white;font-family:'Jost',sans-serif;font-size:.7rem;color:var(--s500);cursor:pointer;transition:all .2s;}
+.ntm.on{background:var(--sage);border-color:var(--sage);color:white;}
+
+/* ══ CALENDARIO ══ */
+.cnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;}
+.clbl{font-family:'Cormorant Garamond',serif;font-size:1.45rem;font-weight:300;color:var(--s700);}
+.carr{width:32px;height:32px;border-radius:50%;border:1px solid var(--s200);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--s500);}
+.carr:active{background:var(--s800);color:white;border-color:var(--s800);}
+.cgrid{background:white;border:1px solid var(--s200);border-radius:16px;overflow:hidden;margin-bottom:1rem;}
+.cwdrow{display:grid;grid-template-columns:repeat(7,1fr);background:var(--s100);}
+.cwd{text-align:center;padding:.5rem 0;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--s400);}
+.cdgrid{display:grid;grid-template-columns:repeat(7,1fr);}
+.cday{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.8rem;color:var(--s600);position:relative;padding:.15rem;}
+.cday.other{color:var(--s300);}
+.cday.today{font-weight:600;color:var(--sage-d);}
+.cday.today::after{content:'';position:absolute;bottom:3px;width:4px;height:4px;border-radius:50%;background:var(--sage-d);}
+.cday.hy{background:rgba(143,168,130,.15);}
+.ddots{display:flex;gap:2px;margin-top:1px;}
+.dy{width:5px;height:5px;border-radius:50%;}
+.dm{width:5px;height:5px;border-radius:50%;}
+.cday.hy .dy{background:var(--sage);}
+.cday.hm .dm{background:var(--terra-l);}
+.legend{display:flex;gap:1rem;margin-bottom:.9rem;font-size:.7rem;color:var(--s500);}
+.legdot{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:.3rem;}
+.stats4{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;margin-bottom:1rem;}
+.sbox2{background:white;border:1px solid var(--s200);border-radius:13px;padding:.8rem .9rem;}
+.sn{font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:400;color:var(--s700);line-height:1;}
+.sl{font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--s400);margin-top:.15rem;}
+.si2{font-size:1rem;margin-bottom:.25rem;}
+.logsec{}
+.logt{font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--s500);margin-bottom:.6rem;}
+.loge{background:white;border:1px solid var(--s200);border-radius:12px;padding:.8rem .9rem;margin-bottom:.5rem;display:flex;gap:.8rem;align-items:center;}
+.logdt{text-align:center;min-width:34px;}
+.logdd{font-family:'Cormorant Garamond',serif;font-size:1.35rem;color:var(--s700);line-height:1;}
+.logmm{font-size:.58rem;letter-spacing:.09em;text-transform:uppercase;color:var(--s400);}
+.logbody{flex:1;min-width:0;}
+.logtype{font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--sage-d);margin-bottom:.15rem;}
+.logdet{font-size:.75rem;color:var(--s500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.logdur{font-family:'Cormorant Garamond',serif;font-size:.9rem;color:var(--s400);flex-shrink:0;}
+
+/* ══ AJUSTES ══ */
+.stitle{font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--s500);margin:.9rem 0 .4rem;letter-spacing:.04em;}
+.scard{background:white;border:1px solid var(--s200);border-radius:14px;overflow:hidden;margin-bottom:1rem;}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--s100);cursor:pointer;}
+.srow:last-child{border-bottom:none;}
+.srow:active{background:var(--s100);}
+.srl{display:flex;align-items:center;gap:.7rem;}
+.sri{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.sri.g{background:rgba(143,168,130,.15);}
+.sri.a{background:rgba(196,163,90,.12);}
+.sri.r{background:rgba(184,115,85,.12);}
+.sri.b{background:rgba(100,140,180,.12);}
+.srn{font-size:.85rem;color:var(--s700);}
+.srd{font-size:.7rem;color:var(--s400);margin-top:.1rem;}
+.srarr{color:var(--s300);font-size:.85rem;}
+
+/* ══ MODAL ══ */
+.mbg{position:fixed;inset:0;background:rgba(30,26,22,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:200;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s;}
+.mbg.show{opacity:1;pointer-events:all;}
+.mbox{background:var(--s50);border-radius:22px 22px 0 0;padding:1.3rem 1.3rem calc(1.3rem + var(--safe-bot));width:100%;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);}
+.mbg.show .mbox{transform:translateY(0);}
+.mhandle{width:38px;height:4px;background:var(--s300);border-radius:2px;margin:0 auto .7rem;}
+.mttl{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:var(--s700);margin-bottom:.3rem;}
+.msub{font-size:.78rem;color:var(--s400);margin-bottom:1rem;line-height:1.6;}
+.mbtn2{width:100%;padding:.75rem;border:none;border-radius:11px;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin-bottom:.5rem;}
+.mbtn2:active{opacity:.8;}
+.mpri2{background:var(--s800);color:white;}
+.msec2{background:var(--s100);color:var(--s600);}
+.mdan{background:rgba(184,115,85,.12);color:var(--terra);}
+textarea.mta{width:100%;height:90px;padding:.65rem;border:1px solid var(--s200);border-radius:9px;font-family:'Jost',sans-serif;font-size:.76rem;color:var(--s700);resize:none;outline:none;margin-bottom:.7rem;background:white;}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(72px + var(--safe-bot) + 10px);left:50%;transform:translateX(-50%) translateY(10px);background:var(--s800);color:white;padding:.55rem 1.2rem;border-radius:2rem;font-size:.8rem;opacity:0;transition:all .3s;z-index:300;pointer-events:none;white-space:nowrap;max-width:88vw;text-align:center;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+</style>
+</head>
+<body>
+<div class="status-bar"></div>
+
+<!-- Install banner iOS -->
+<div class="ibanner" id="ibanner">
+  <span>📲</span>
+  <div class="ibanner-text">Para instalar: pulsa <strong>Compartir ↑</strong> → <strong>"Añadir a inicio"</strong></div>
+  <button class="ibanner-close" onclick="dimBanner()">✕</button>
+</div>
+
+<header>
+  <div class="logo"><em>Sā</em>dhana</div>
+  <div class="hbtns">
+    <button class="ibtn" onclick="openM('mexport')" title="Exportar">⬆</button>
+    <button class="ibtn" onclick="openM('mimport')" title="Importar">⬇</button>
+  </div>
+</header>
+
+<div class="scroll-area" id="sa">
+
+  <!-- ════ PRÁCTICA ════ -->
+  <div class="view on" id="v-practica">
+    <h1 class="pg-t">Āsanas</h1>
+    <p class="pg-s">Selecciona · Practica · Registra</p>
+    <div class="sbox">
+      <span class="sicon">🔍</span>
+      <input type="search" id="si" placeholder="Buscar en sánscrito o castellano…" oninput="renderA()">
+    </div>
+    <div class="chips" id="chips">
+      <button class="chip on" onclick="setF('todas',this)">Todas</button>
+      <button class="chip" onclick="setF('equilibrio',this)">Equilibrio</button>
+      <button class="chip" onclick="setF('flexion',this)">Flexión</button>
+      <button class="chip" onclick="setF('extension',this)">Extensión</button>
+      <button class="chip" onclick="setF('inversion',this)">Inversión</button>
+      <button class="chip" onclick="setF('torsion',this)">Torsión</button>
+      <button class="chip" onclick="setF('fuerza',this)">Fuerza</button>
+      <button class="chip" onclick="setF('restaurativa',this)">Restaurativa</button>
+    </div>
+    <div class="alist" id="alist"></div>
+  </div>
+
+  <!-- ════ MEDITACIÓN ════ -->
+  <div class="view" id="v-meditacion">
+    <h1 class="pg-t">Dhyāna</h1>
+    <p class="pg-s">Meditación consciente</p>
+    <div class="med-wrap">
+      <div class="mandala">
+        <div class="mr"></div><div class="mr"></div><div class="mr"></div>
+        <div class="mc">🪷</div>
+      </div>
+      <div class="mtime" id="mdisp">00:00</div>
+      <div class="mpresets">
+        <button class="mpre" onclick="setMP(5,this)">5 min</button>
+        <button class="mpre" onclick="setMP(10,this)">10 min</button>
+        <button class="mpre" onclick="setMP(15,this)">15 min</button>
+        <button class="mpre" onclick="setMP(20,this)">20 min</button>
+        <button class="mpre" onclick="setMP(30,this)">30 min</button>
+        <button class="mpre on" onclick="setMP(0,this)">Libre</button>
+      </div>
+      <div class="mbtns">
+        <button class="mbtn msec" onclick="resetM()">Reiniciar</button>
+        <button class="mbtn mpri" id="mbtn" onclick="togM()">Comenzar</button>
+      </div>
+      <button class="bsavemed" id="bsavemed" onclick="saveM()">✦ Guardar meditación</button>
+    </div>
+    <div class="nsec">
+      <div class="nrow">
+        <div><div style="font-size:.83rem;font-weight:500;color:var(--s700);">Recordatorio diario</div>
+          <div style="font-size:.7rem;color:var(--s400);">Aviso para practicar</div></div>
+        <button class="toggle" id="ntog" onclick="togNotif()"></button>
+      </div>
+      <div class="ntimes" id="ntimes">
+        <button class="ntm" onclick="setNT('07:00',this)">7:00</button>
+        <button class="ntm" onclick="setNT('08:00',this)">8:00</button>
+        <button class="ntm on" onclick="setNT('09:00',this)">9:00</button>
+        <button class="ntm" onclick="setNT('18:00',this)">18:00</button>
+        <button class="ntm" onclick="setNT('20:00',this)">20:00</button>
+        <button class="ntm" onclick="setNT('21:00',this)">21:00</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ CALENDARIO ════ -->
+  <div class="view" id="v-calendario">
+    <h1 class="pg-t">Progreso</h1>
+    <p class="pg-s">Tu constancia mes a mes</p>
+    <div class="cnav">
+      <button class="carr" onclick="chM(-1)">‹</button>
+      <span class="clbl" id="clbl"></span>
+      <button class="carr" onclick="chM(1)">›</button>
+    </div>
+    <div class="cgrid">
+      <div class="cwdrow">
+        <div class="cwd">Lu</div><div class="cwd">Ma</div><div class="cwd">Mi</div>
+        <div class="cwd">Ju</div><div class="cwd">Vi</div><div class="cwd">Sá</div><div class="cwd">Do</div>
+      </div>
+      <div class="cdgrid" id="cdgrid"></div>
+    </div>
+    <div class="legend">
+      <span><span class="legdot" style="background:rgba(143,168,130,.4);"></span>Yoga</span>
+      <span><span class="legdot" style="border-radius:50%;background:var(--terra-l);width:8px;height:8px;"></span>Meditación</span>
+    </div>
+    <div class="stats4">
+      <div class="sbox2"><div class="si2">🧘</div><div class="sn" id="sty">0</div><div class="sl">Días yoga</div></div>
+      <div class="sbox2"><div class="si2">🪷</div><div class="sn" id="stm">0</div><div class="sl">Días meditación</div></div>
+      <div class="sbox2"><div class="si2">⏱</div><div class="sn" id="styt">0m</div><div class="sl">Tiempo yoga</div></div>
+      <div class="sbox2"><div class="si2">🔥</div><div class="sn" id="stk">0</div><div class="sl">Racha días</div></div>
+    </div>
+    <div class="logsec" id="logsec"></div>
+  </div>
+
+  <!-- ════ AJUSTES ════ -->
+  <div class="view" id="v-ajustes">
+    <h1 class="pg-t">Ajustes</h1>
+    <p class="pg-s">Datos y configuración</p>
+    <p class="stitle">Datos</p>
+    <div class="scard">
+      <div class="srow" onclick="openM('mexport')">
+        <div class="srl"><div class="sri g">📤</div><div><div class="srn">Exportar</div><div class="srd">Copia de seguridad JSON</div></div></div>
+        <span class="srarr">›</span>
+      </div>
+      <div class="srow" onclick="openM('mimport')">
+        <div class="srl"><div class="sri a">📥</div><div><div class="srn">Importar</div><div class="srd">Restaurar copia de seguridad</div></div></div>
+        <span class="srarr">›</span>
+      </div>
+      <div class="srow" onclick="openM('mclear')">
+        <div class="srl"><div class="sri r">🗑</div><div><div class="srn">Borrar todo</div><div class="srd">Eliminar todos los registros</div></div></div>
+        <span class="srarr">›</span>
+      </div>
+    </div>
+    <p class="stitle">Información</p>
+    <div class="scard">
+      <div class="srow" style="cursor:default;">
+        <div class="srl"><div class="sri b">ℹ</div><div><div class="srn">Sādhana v2.1</div><div class="srd">38 āsanas · offline PWA · localStorage</div></div></div>
+      </div>
+    </div>
+    <div style="margin:2rem 0;text-align:center;font-size:.7rem;color:var(--s300);letter-spacing:.08em;">तत् त्वम् असि · Tat tvam asi</div>
+  </div>
+</div>
+
+<!-- SESSION PANEL -->
+<div class="sp" id="sp">
+  <div class="sp-top">
+    <span class="sp-title">Sesión de hoy</span>
+    <span class="sp-ct" id="spct">0</span>
+  </div>
+  <div class="sp-tags" id="sptags"></div>
+  <div class="trow">
+    <div class="tdisp" id="tdisp">00:00:00</div>
+    <div style="display:flex;gap:.35rem;">
+      <button class="tbtn tgo" id="tbtn" onclick="togT()">Iniciar</button>
+      <button class="tbtn trst" onclick="rstT()">↺</button>
+    </div>
+  </div>
+  <button class="bsave" onclick="saveS()">✦ Guardar sesión</button>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+  <button class="nitem on" onclick="sv('practica',this)"><span class="nicon">🧘</span><span class="nlabel">Práctica</span></button>
+  <button class="nitem" onclick="sv('meditacion',this)"><span class="nicon">🪷</span><span class="nlabel">Meditar</span></button>
+  <button class="nitem" onclick="sv('calendario',this)"><span class="nicon">📅</span><span class="nlabel">Progreso</span></button>
+  <button class="nitem" onclick="sv('ajustes',this)"><span class="nicon">⚙</span><span class="nlabel">Ajustes</span></button>
+</nav>
+
+<!-- MODALS -->
+<div class="mbg" id="mexport"><div class="mbox">
+  <div class="mhandle"></div>
+  <div class="mttl">Exportar datos</div>
+  <div class="msub">Copia el JSON y guárdalo en Notas o iCloud. Úsalo para restaurar al actualizar la app.</div>
+  <textarea class="mta" id="exta" readonly></textarea>
+  <button class="mbtn2 mpri2" onclick="copyEx()">📋 Copiar</button>
+  <button class="mbtn2 msec2" onclick="closeM('mexport')">Cerrar</button>
+</div></div>
+
+<div class="mbg" id="mimport"><div class="mbox">
+  <div class="mhandle"></div>
+  <div class="mttl">Importar datos</div>
+  <div class="msub">Pega el JSON exportado. Se fusionará con los datos actuales sin borrar nada.</div>
+  <textarea class="mta" id="imta" placeholder='{"sessions":[...],"meditations":[]}'></textarea>
+  <button class="mbtn2 mpri2" onclick="doImport()">⬇ Importar</button>
+  <button class="mbtn2 msec2" onclick="closeM('mimport')">Cancelar</button>
+</div></div>
+
+<div class="mbg" id="mclear"><div class="mbox">
+  <div class="mhandle"></div>
+  <div class="mttl">¿Borrar todo?</div>
+  <div class="msub">Se eliminarán todas las sesiones y meditaciones. Exporta primero si quieres guardar una copia.</div>
+  <button class="mbtn2 mdan" onclick="clearAll()">🗑 Sí, borrar todo</button>
+  <button class="mbtn2 msec2" onclick="closeM('mclear')">Cancelar</button>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+//  EMOJIS POR POSTURA
+// ═══════════════════════════════════════════
+const EMOJIS = {
+  vrksasana:'🌳',    garudasana:'🦅',    virabhadra3:'⚔️',   utthitatri:'📐',
+  ardhacandr:'🌙',   natarajasana:'💃',  uttanasana:'🙇',    paschimotta:'🧘',
+  janusirsasana:'🦵',malasana:'🪨',      prasarita:'🦿',     bhujangasana:'🐍',
+  setu:'🌉',         urdhvamukha:'🐕',   ustrasana:'🐪',     rajakapota:'🪶',
+  dhanurasana:'🏹',  urdhvadhanu:'🎡',   gomukhasana:'🐄',   adho:'🐕',
+  sarvangasana:'🕯️', halasana:'🌾',      viparitakarani:'🦶',sirsasana:'🙃',
+  pincha:'🦚',       ardhamatsya:'🌀',   parivrtta:'🔄',     parsvakonasana:'📏',
+  bharadvajasana:'💫',marichyasana:'🌪️', chaturanga:'💪',    vasisthasana:'📏',
+  bakasana:'🐦',     parsva_bakasana:'🐦',tolasana:'⚖️',     astavakrasana:'⚡',
+  koundinyasana:'✨', ashtanga:'🙏',      balasana:'🌿',      savasana:'✨',
+  supTabaddha:'🦋',  sukhasana:'🕉️',     padmasana:'🪷',     virasana:'🏔️',
+  tadasana:'⛰️',     virabhadra1:'⚔️',   virabhadra2:'⚔️',   virabhadraS:'🕊️',
+};
+const EMOJIS_DEFAULT = '🧘';
+
+// ═══════════════════════════════════════════
+//  ĀSANAS DATA  (sánscrito primero)
+// ═══════════════════════════════════════════
+const ASANAS = [
+  // EQUILIBRIO
+  {id:'vrksasana',      sk:'Vṛkṣāsana',               es:'Postura del Árbol',              cat:'equilibrio',  level:'inter', freq:10},
+  {id:'garudasana',     sk:'Garuḍāsana',               es:'Postura del Águila',             cat:'equilibrio',  level:'inter', freq:9},
+  {id:'virabhadra3',    sk:'Vīrabhadrāsana III',        es:'Guerrero III',                   cat:'equilibrio',  level:'inter', freq:9},
+  {id:'utthitatri',     sk:'Utthita Trikoṇāsana',       es:'Triángulo Extendido',            cat:'equilibrio',  level:'inter', freq:9},
+  {id:'ardhacandr',     sk:'Ardha Candrāsana',          es:'Postura de la Media Luna',       cat:'equilibrio',  level:'inter', freq:8},
+  {id:'natarajasana',   sk:'Naṭarājāsana',              es:'Rey Danzante',                   cat:'equilibrio',  level:'adv',   freq:7},
+  // FLEXIÓN
+  {id:'uttanasana',     sk:'Uttānāsana',                es:'La Pinza de Pie',                cat:'flexion',     level:'inter', freq:10},
+  {id:'paschimotta',    sk:'Paścimottānāsana',          es:'Pinza Sentada',                  cat:'flexion',     level:'inter', freq:9},
+  {id:'janusirsasana',  sk:'Jānu Śīrṣāsana',            es:'Cabeza a la Rodilla',            cat:'flexion',     level:'inter', freq:8},
+  {id:'malasana',       sk:'Mālāsana',                  es:'Postura de la Guirnalda / Cuclillas',cat:'flexion', level:'inter', freq:8},
+  {id:'prasarita',      sk:'Prasārita Pādottānāsana',   es:'Flexión Piernas Abiertas',       cat:'flexion',     level:'inter', freq:8},
+  // EXTENSIÓN
+  {id:'bhujangasana',   sk:'Bhujaṅgāsana',              es:'Postura de la Cobra',            cat:'extension',   level:'inter', freq:10},
+  {id:'setu',           sk:'Setu Bandha Sarvāṅgāsana',  es:'Postura del Puente',             cat:'extension',   level:'inter', freq:9},
+  {id:'urdhvamukha',    sk:'Ūrdhva Mukha Śvānāsana',    es:'Perro Boca Arriba',              cat:'extension',   level:'inter', freq:9},
+  {id:'ustrasana',      sk:'Uṣṭrāsana',                 es:'Postura del Camello',            cat:'extension',   level:'inter', freq:8},
+  {id:'rajakapota',     sk:'Ardha Kapotāsana',          es:'Media Paloma',                   cat:'extension',   level:'inter', freq:9},
+  {id:'dhanurasana',    sk:'Dhanurāsana',               es:'Postura del Arco',               cat:'extension',   level:'inter', freq:8},
+  {id:'urdhvadhanu',    sk:'Ūrdhva Dhanurāsana',        es:'La Rueda',                       cat:'extension',   level:'adv',   freq:8},
+  {id:'gomukhasana',    sk:'Gomukhasāna',               es:'Postura de la Vaca / Cara de Vaca',cat:'extension', level:'inter', freq:7},
+  // INVERSIÓN
+  {id:'adho',           sk:'Adho Mukha Śvānāsana',      es:'Perro Boca Abajo',               cat:'inversion',   level:'inter', freq:10},
+  {id:'sarvangasana',   sk:'Sarvāṅgāsana',              es:'La Vela',                        cat:'inversion',   level:'inter', freq:8},
+  {id:'halasana',       sk:'Halāsana',                  es:'Postura del Arado',              cat:'inversion',   level:'inter', freq:7},
+  {id:'viparitakarani', sk:'Viparīta Karaṇī',           es:'Piernas en la Pared',            cat:'inversion',   level:'inter', freq:7},
+  {id:'sirsasana',      sk:'Śīrṣāsana',                 es:'Parada de Cabeza',               cat:'inversion',   level:'adv',   freq:7},
+  {id:'pincha',         sk:'Pīñcha Mayūrāsana',         es:'Pincha / Previsión del Pavo Real',cat:'inversion',  level:'adv',   freq:6},
+  // TORSIÓN
+  {id:'ardhamatsya',    sk:'Ardha Matsyendrāsana',      es:'Media Torsión Espinal',          cat:'torsion',     level:'inter', freq:9},
+  {id:'parivrtta',      sk:'Parivrtta Trikoṇāsana',     es:'Triángulo en Torsión',           cat:'torsion',     level:'inter', freq:7},
+  {id:'parsvakonasana', sk:'Utthita Pārśvakoṇāsana',    es:'Ángulo Lateral Extendido',       cat:'torsion',     level:'inter', freq:7},
+  {id:'bharadvajasana', sk:'Bharadvājāsana',            es:'Torsión de Bharadvāja',          cat:'torsion',     level:'inter', freq:6},
+  {id:'marichyasana',   sk:'Marīcyāsana',               es:'Postura de Marichi',             cat:'torsion',     level:'adv',   freq:6},
+  // FUERZA
+  {id:'chaturanga',     sk:'Caturāṅga Daṇḍāsana',       es:'Bastón de Cuatro Apoyos',        cat:'fuerza',      level:'inter', freq:10},
+  {id:'vasisthasana',   sk:'Vasiṣṭhāsana',              es:'Plancha Lateral',                cat:'fuerza',      level:'inter', freq:8},
+  {id:'bakasana',       sk:'Bakāsana',                  es:'Postura del Cuervo',             cat:'fuerza',      level:'adv',   freq:7},
+  {id:'tolasana',       sk:'Tolāsana',                  es:'Postura de la Balanza',          cat:'fuerza',      level:'adv',   freq:6},
+  {id:'astavakrasana',  sk:'Aṣṭavakrāsana',             es:'Postura de los 8 Ángulos',       cat:'fuerza',      level:'adv',   freq:5},
+  {id:'koundinyasana',  sk:'Koundinyāsana',             es:'Postura de Koundinya',           cat:'fuerza',      level:'adv',   freq:5},
+  {id:'ashtanga',       sk:'Aṣṭāṅga Namaskāra',         es:'Saludo de los 8 Puntos / Guerrero Humilde',cat:'fuerza',level:'inter',freq:7},
+  // RESTAURATIVA
+  {id:'balasana',       sk:'Bālāsana',                  es:'Postura del Niño',               cat:'restaurativa',level:'inter', freq:10},
+  {id:'savasana',       sk:'Śavāsana',                  es:'Postura del Cadáver',            cat:'restaurativa',level:'inter', freq:10},
+  {id:'supTabaddha',    sk:'Supta Baddha Koṇāsana',     es:'Postura de la Mariposa Reclinada',cat:'restaurativa',level:'inter',freq:8},
+  {id:'sukhasana',      sk:'Sukhāsana',                 es:'Postura Fácil / de Meditación',  cat:'restaurativa',level:'inter', freq:9},
+  {id:'padmasana',      sk:'Padmāsana',                 es:'Postura del Loto',               cat:'restaurativa',level:'adv',   freq:8},
+  {id:'virasana',       sk:'Vīrāsana',                  es:'Postura del Héroe',              cat:'restaurativa',level:'inter', freq:7},
+  {id:'tadasana',       sk:'Tāḍāsana',                  es:'Postura de la Montaña',          cat:'restaurativa',level:'inter', freq:9},
+  {id:'virabhadra1',    sk:'Vīrabhadrāsana I',          es:'Guerrero I',                     cat:'restaurativa',level:'inter', freq:9},
+  {id:'virabhadra2',    sk:'Vīrabhadrāsana II',         es:'Guerrero II',                    cat:'restaurativa',level:'inter', freq:9},
+  {id:'virabhadraS',    sk:'Vīrabhadrāsana (Paz)',      es:'Guerrero de la Paz',             cat:'restaurativa',level:'inter', freq:7},
+];
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let sel = new Set(), filter = 'todas';
+let tRun=false, tInt=null, tSec=0;
+let mRun=false, mInt=null, mSec=0, mPre=0;
+let calY, calM, notifOn=false, notifTime='09:00';
+
+// ═══════════════════════════════════════════
+//  STORAGE
+// ═══════════════════════════════════════════
+const gS = () => JSON.parse(localStorage.getItem('sdh_s')||'[]');
+const gM = () => JSON.parse(localStorage.getItem('sdh_m')||'[]');
+const sS = d  => localStorage.setItem('sdh_s', JSON.stringify(d));
+const sM = d  => localStorage.setItem('sdh_m', JSON.stringify(d));
+
+// ═══════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════
+function sv(name, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+  document.querySelectorAll('.nitem').forEach(b => b.classList.remove('on'));
+  document.getElementById('v-'+name).classList.add('on');
+  if(btn) btn.classList.add('on');
+  document.getElementById('sa').scrollTop = 0;
+  if(name==='calendario'){rcal();rlog();ustats();}
+}
+
+// ═══════════════════════════════════════════
+//  RENDER ĀSANAS
+// ═══════════════════════════════════════════
+function renderA() {
+  const q = document.getElementById('si').value.toLowerCase().trim();
+  const sorted = [...ASANAS].sort((a,b)=>b.freq-a.freq);
+  const list = sorted.filter(a=>{
+    const cok = filter==='todas'||a.cat===filter;
+    const sok = !q||a.sk.toLowerCase().includes(q)||a.es.toLowerCase().includes(q);
+    return cok && sok;
+  });
+  document.getElementById('alist').innerHTML = list.map(a=>`
+    <div class="arow ${sel.has(a.id)?'sel':''}" onclick="togA('${a.id}')">
+      <div class="asana-fig">${EMOJIS[a.id]||EMOJIS_DEFAULT}</div>
+      <div class="ainfo">
+        <div class="ask">${a.sk}</div>
+        <div class="aes">${a.es}</div>
+        <span class="abadge ${a.level==='adv'?'ba':'bi'}">${a.level==='adv'?'Avanzado':'Intermedio'}</span>
+      </div>
+    </div>`).join('');
+}
+
+function setF(f,el){
+  filter=f;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderA();
+}
+
+function togA(id){
+  if(sel.has(id)) sel.delete(id); else sel.add(id);
+  renderA(); usp();
+}
+
+function usp(){
+  const p=document.getElementById('sp'), n=sel.size;
+  if(!n){p.classList.remove('up');return;}
+  p.classList.add('up');
+  document.getElementById('spct').textContent=n+' āsana'+(n>1?'s':'');
+  document.getElementById('sptags').innerHTML=[...sel].map(id=>{
+    const a=ASANAS.find(x=>x.id===id);
+    return a?`<span class="sptag">${a.sk}<button onclick="togA('${id}')">✕</button></span>`:'';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+//  YOGA TIMER
+// ═══════════════════════════════════════════
+function togT(){
+  if(tRun){clearInterval(tInt);tRun=false;document.getElementById('tbtn').textContent='Continuar';}
+  else{
+    tRun=true;document.getElementById('tbtn').textContent='Pausar';
+    tInt=setInterval(()=>{tSec++;document.getElementById('tdisp').textContent=ffull(tSec);},1000);
+  }
+}
+function rstT(){
+  clearInterval(tInt);tRun=false;tSec=0;
+  document.getElementById('tdisp').textContent='00:00:00';
+  document.getElementById('tbtn').textContent='Iniciar';
+}
+function saveS(){
+  if(!sel.size){toast('Selecciona al menos una āsana');return;}
+  if(!tSec){toast('Inicia el cronómetro primero');return;}
+  const r={date:td(),duration:tSec,asanas:[...sel],ts:Date.now()};
+  const arr=gS();arr.unshift(r);sS(arr);
+  toast('✦ Sesión guardada · '+ffull(tSec));
+  sel.clear();rstT();renderA();usp();
+}
+
+// ═══════════════════════════════════════════
+//  MEDITATION TIMER
+// ═══════════════════════════════════════════
+function setMP(m,el){
+  document.querySelectorAll('.mpre').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');mPre=m*60;resetM();
+}
+function togM(){
+  if(mRun){
+    clearInterval(mInt);mRun=false;
+    document.getElementById('mbtn').textContent='Continuar';
+    if(mSec>30) document.getElementById('bsavemed').classList.add('show');
+  } else {
+    mRun=true;document.getElementById('mbtn').textContent='Pausar';
+    document.getElementById('bsavemed').classList.remove('show');
+    mInt=setInterval(()=>{
+      mSec++;document.getElementById('mdisp').textContent=fmed(mSec);
+      if(mPre>0&&mSec>=mPre){
+        clearInterval(mInt);mRun=false;
+        document.getElementById('mbtn').textContent='Comenzar';
+        document.getElementById('bsavemed').classList.add('show');
+        toast('🔔 Meditación completada · '+fmed(mSec));
+        if('vibrate'in navigator)navigator.vibrate([300,100,300]);
+      }
+    },1000);
+  }
+}
+function resetM(){
+  clearInterval(mInt);mRun=false;mSec=0;
+  document.getElementById('mdisp').textContent='00:00';
+  document.getElementById('mbtn').textContent='Comenzar';
+  document.getElementById('bsavemed').classList.remove('show');
+}
+function saveM(){
+  if(mSec<30){toast('Meditación muy corta');return;}
+  const r={date:td(),duration:mSec,ts:Date.now()};
+  const arr=gM();arr.unshift(r);sM(arr);
+  toast('🪷 Meditación guardada · '+fmed(mSec));resetM();
+}
+
+// ═══════════════════════════════════════════
+//  NOTIFICATIONS
+// ═══════════════════════════════════════════
+function togNotif(){
+  const btn=document.getElementById('ntog');
+  if(!notifOn){
+    if(!('Notification'in window)){toast('Tu navegador no admite notificaciones');return;}
+    Notification.requestPermission().then(p=>{
+      if(p==='granted'){
+        notifOn=true;btn.classList.add('on');schedNotif();
+        toast('🔔 Recordatorio a las '+notifTime);
+        localStorage.setItem('sdh_notif',JSON.stringify({on:true,time:notifTime}));
+      } else toast('Permiso denegado');
+    });
+  } else {
+    notifOn=false;btn.classList.remove('on');
+    localStorage.setItem('sdh_notif',JSON.stringify({on:false,time:notifTime}));
+    toast('Recordatorio desactivado');
+  }
+}
+function setNT(t,el){
+  document.querySelectorAll('.ntm').forEach(n=>n.classList.remove('on'));
+  el.classList.add('on');notifTime=t;
+  if(notifOn)schedNotif();
+  localStorage.setItem('sdh_notif',JSON.stringify({on:notifOn,time:notifTime}));
+}
+function schedNotif(){
+  if(!('serviceWorker'in navigator))return;
+  const[h,m]=notifTime.split(':').map(Number);
+  const now=new Date(),next=new Date();
+  next.setHours(h,m,0,0);if(next<=now)next.setDate(next.getDate()+1);
+  navigator.serviceWorker.ready.then(sw=>{
+    sw.active&&sw.active.postMessage({type:'SCHEDULE_NOTIFICATION',
+      title:'Sādhana · Momento de practicar 🧘',body:'Tu sesión de yoga te está esperando.',delay:next-now});
+  });
+}
+
+// ═══════════════════════════════════════════
+//  CALENDAR
+// ═══════════════════════════════════════════
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MESC=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function rcal(){
+  const now=new Date();
+  if(calY===undefined){calY=now.getFullYear();calM=now.getMonth();}
+  document.getElementById('clbl').textContent=MESES[calM]+' '+calY;
+  const yD=new Set(gS().map(s=>s.date));
+  const mD=new Set(gM().map(s=>s.date));
+  const tod=td();
+  let dow=new Date(calY,calM,1).getDay();dow=dow===0?6:dow-1;
+  const dim=new Date(calY,calM+1,0).getDate();
+  const dimp=new Date(calY,calM,0).getDate();
+  const cells=Math.ceil((dow+dim)/7)*7;
+  let h='';
+  for(let i=0;i<cells;i++){
+    let d,other=false,ds;
+    if(i<dow){d=dimp-dow+i+1;other=true;const dt=new Date(calY,calM-1,d);ds=dt.toISOString().split('T')[0];}
+    else if(i>=dow+dim){d=i-dow-dim+1;other=true;const dt=new Date(calY,calM+1,d);ds=dt.toISOString().split('T')[0];}
+    else{d=i-dow+1;ds=dstr(calY,calM,d);}
+    const hy=yD.has(ds),hm=mD.has(ds),isT=ds===tod;
+    h+=`<div class="cday${other?' other':''}${isT?' today':''}${hy?' hy':''}${hm?' hm':''}">${d}<div class="ddots"><div class="dy"></div><div class="dm"></div></div></div>`;
+  }
+  document.getElementById('cdgrid').innerHTML=h;
+}
+
+function chM(d){calM+=d;if(calM>11){calM=0;calY++;}if(calM<0){calM=11;calY--;}rcal();rlog();ustats();}
+
+function ustats(){
+  const y=calY,m=calM+1,pf=`${y}-${String(m).padStart(2,'0')}`;
+  const ss=gS().filter(s=>s.date&&s.date.startsWith(pf));
+  const ms=gM().filter(s=>s.date&&s.date.startsWith(pf));
+  const ydays=new Set(ss.map(s=>s.date)).size;
+  const mdays=new Set(ms.map(s=>s.date)).size;
+  const ysec=ss.reduce((a,s)=>a+(s.duration||0),0);
+  let streak=0;
+  const allD=new Set([...gS(),...gM()].map(s=>s.date));
+  for(let i=0;i<365;i++){const dd=new Date();dd.setDate(dd.getDate()-i);if(allD.has(dd.toISOString().split('T')[0]))streak++;else break;}
+  document.getElementById('sty').textContent=ydays;
+  document.getElementById('stm').textContent=mdays;
+  document.getElementById('styt').textContent=fh(ysec);
+  document.getElementById('stk').textContent=streak;
+}
+
+function rlog(){
+  const y=calY,m=calM+1,pf=`${y}-${String(m).padStart(2,'0')}`;
+  const all=[...gS().filter(s=>s.date&&s.date.startsWith(pf)).map(s=>({...s,_t:'y'})),
+             ...gM().filter(s=>s.date&&s.date.startsWith(pf)).map(s=>({...s,_t:'m'}))]
+    .sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const sec=document.getElementById('logsec');
+  if(!all.length){sec.innerHTML=`<p style="color:var(--s400);font-size:.8rem;text-align:center;padding:1rem 0;">Sin registros este mes</p>`;return;}
+  sec.innerHTML=`<div class="logt">Registros del mes</div>`+all.map(s=>{
+    const[,mm,dd]=s.date.split('-');
+    const iM=s._t==='m';
+    const det=!iM&&s.asanas?s.asanas.map(id=>ASANAS.find(a=>a.id===id)?.sk||id).join(', '):'Sesión de meditación';
+    return`<div class="loge">
+      <div class="logdt"><div class="logdd">${dd}</div><div class="logmm">${MESC[parseInt(mm)-1]}</div></div>
+      <div class="logbody"><div class="logtype">${iM?'🪷 Dhyāna':'🧘 Yoga'}</div><div class="logdet">${det}</div></div>
+      <div class="logdur">${iM?fmed(s.duration):ffull(s.duration)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+//  EXPORT / IMPORT / CLEAR
+// ═══════════════════════════════════════════
+function openExM(){
+  const d={sessions:gS(),meditations:gM(),exportedAt:new Date().toISOString()};
+  document.getElementById('exta').value=JSON.stringify(d,null,2);
+  document.getElementById('mexport').classList.add('show');
+}
+function copyEx(){
+  const v=document.getElementById('exta').value;
+  if(navigator.clipboard)navigator.clipboard.writeText(v).then(()=>toast('📋 Copiado'));
+  else{document.getElementById('exta').select();document.execCommand('copy');toast('📋 Copiado');}
+}
+function doImport(){
+  try{
+    const d=JSON.parse(document.getElementById('imta').value.trim());
+    if(!d.sessions&&!d.meditations)throw 0;
+    const eS=gS(),eM=gM();
+    const eTs=new Set(eS.map(s=>s.ts)),eTm=new Set(eM.map(s=>s.ts));
+    const nS=(d.sessions||[]).filter(s=>!eTs.has(s.ts));
+    const nM=(d.meditations||[]).filter(s=>!eTm.has(s.ts));
+    sS([...eS,...nS].sort((a,b)=>b.ts-a.ts));
+    sM([...eM,...nM].sort((a,b)=>b.ts-a.ts));
+    closeM('mimport');document.getElementById('imta').value='';
+    toast(`✦ ${nS.length} sesiones y ${nM.length} meditaciones importadas`);
+  }catch{toast('JSON no válido');}
+}
+function clearAll(){
+  localStorage.removeItem('sdh_s');localStorage.removeItem('sdh_m');
+  closeM('mclear');toast('🗑 Datos borrados');
+  rcal();rlog();ustats();
+}
+
+// ═══════════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════════
+function openM(id){
+  if(id==='mexport')openExM();
+  else document.getElementById(id).classList.add('show');
+}
+function closeM(id){document.getElementById(id).classList.remove('show');}
+document.querySelectorAll('.mbg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('show');}));
+
+// ═══════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════
+let _tt;
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ═══════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════
+const td=()=>new Date().toISOString().split('T')[0];
+const dstr=(y,m,d)=>new Date(y,m,d).toISOString().split('T')[0];
+const p2=n=>String(n).padStart(2,'0');
+const ffull=s=>`${p2(Math.floor(s/3600))}:${p2(Math.floor((s%3600)/60))}:${p2(s%60)}`;
+const fmed=s=>`${p2(Math.floor(s/60))}:${p2(s%60)}`;
+const fh=s=>{if(!s)return'0m';const h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h?`${h}h${m?' '+m+'m':''}`:`${m}m`;};
+
+// ═══════════════════════════════════════════
+//  iOS BANNER
+// ═══════════════════════════════════════════
+function dimBanner(){document.getElementById('ibanner').classList.remove('show');localStorage.setItem('sdh_ib','1');}
+function chkBanner(){
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStd=window.navigator.standalone;
+  if(isIOS&&!isStd&&!localStorage.getItem('sdh_ib'))
+    document.getElementById('ibanner').classList.add('show');
+}
+
+// ═══════════════════════════════════════════
+//  SERVICE WORKER (seguro: solo en HTTPS y GitHub Pages)
+// ═══════════════════════════════════════════
+function regSW(){
+  if('serviceWorker'in navigator && location.protocol==='https:'){
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
+}
+
+// ═══════════════════════════════════════════
+//  RESTORE NOTIF SETTINGS
+// ═══════════════════════════════════════════
+function restoreNotif(){
+  const sv=localStorage.getItem('sdh_notif');if(!sv)return;
+  const{on,time}=JSON.parse(sv);notifTime=time||'09:00';
+  if(on&&typeof Notification!=='undefined'&&Notification.permission==='granted'){
+    notifOn=true;document.getElementById('ntog').classList.add('on');schedNotif();
+  }
+  document.querySelectorAll('.ntm').forEach(el=>el.classList.toggle('on',el.textContent.trim()===notifTime));
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+(function init(){
+  const now=new Date();calY=now.getFullYear();calM=now.getMonth();
+  regSW();
+  renderA();
+  chkBanner();
+  restoreNotif();
+})();
+</script>
+</body>
+</html>
